@@ -132,12 +132,13 @@ module CalendarHelper
   private
   
   def day_tag(day, options, block)
-    cell_text, cell_attr = block.call(day)
+    cell_text, cell_attrs = block.call(day)
     cell_text  ||= options[:accessible] ? "#{day.mday}<span class='hidden'> #{Date::MONTHNAMES[day.mon]}</span>" : day.mday
     cell_attrs ||= {}
-    cell_attrs[:class] ||= day.month == options[:month] ? options[:day_class] : options[:other_month_class]
+    cell_attrs[:class] ||= options[:day_class]
+    cell_attrs[:class] ||= (day.month == options[:month] ? options[:day_class] : options[:other_month_class])
     cell_attrs[:class] += " weekendDay" if [0, 6].include?(day.wday)
-    cell_attrs[:class] += " today" if (cur == (Time.respond_to?(:zone) ? Time.zone.now.to_date : Date.today)) and options[:show_today]
+    cell_attrs[:class] += " today" if (day == (Time.respond_to?(:zone) ? Time.zone.now.to_date : Date.today)) and options[:show_today]
     cell_attrs = cell_attrs.map {|k, v| %(#{k}="#{v}") }.join(" ")
     "<td #{cell_attrs}>#{cell_text}</td>"
   end
