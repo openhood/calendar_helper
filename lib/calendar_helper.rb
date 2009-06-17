@@ -15,27 +15,28 @@ module CalendarHelper
   #  :month # The month number to show the calendar for.
   # 
   # The following are optional, available for customizing the default behaviour:
-  #   :table_class       => "calendar"        # The class for the <table> tag.
-  #   :month_name_class  => "monthName"       # The class for the name of the month, at the top of the table.
-  #   :other_month_class => "otherMonth" # Not implemented yet.
-  #   :day_name_class    => "dayName"         # The class is for the names of the weekdays, at the top.
-  #   :day_class         => "day"             # The class for the individual day number cells.
-  #                                             This may or may not be used if you specify a block (see below).
-  #   :abbrev            => (0..2)            # This option specifies how the day names should be abbreviated.
-  #                                             Use (0..2) for the first three letters, (0..0) for the first, and
-  #                                             (0..-1) for the entire name.
-  #   :first_day_of_week => 0                 # Renders calendar starting on Sunday. Use 1 for Monday, and so on.
-  #   :accessible        => true              # Turns on accessibility mode. This suffixes dates within the
-  #                                           # calendar that are outside the range defined in the <caption> with 
-  #                                           # <span class="hidden"> MonthName</span>
-  #                                           # Defaults to false.
-  #                                           # You'll need to define an appropriate style in order to make this disappear. 
-  #                                           # Choose your own method of hiding content appropriately.
+  #   :table_class          => "calendar"        # The class for the <table> tag.
+  #   :month_name_class     => "monthName"       # The class for the name of the month, at the top of the table.
+  #   :other_month_class    => "otherMonth"      # Not implemented yet.
+  #   :day_name_class       => "dayName"         # The class is for the names of the weekdays, at the top.
+  #   :day_class            => "day"             # The class for the individual day number cells.
+  #                                              This may or may not be used if you specify a block (see below).
+  #   :abbrev               => (0..2)            # This option specifies how the day names should be abbreviated.
+  #                                              Use (0..2) for the first three letters, (0..0) for the first, and
+  #                                              (0..-1) for the entire name.
+  #   :first_day_of_week    => 0                 # Renders calendar starting on Sunday. Use 1 for Monday, and so on.
+  #   :accessible           => true              # Turns on accessibility mode. This suffixes dates within the
+  #                                              # calendar that are outside the range defined in the <caption> with 
+  #                                              # <span class="hidden"> MonthName</span>
+  #                                              # Defaults to false.
+  #                                              # You'll need to define an appropriate style in order to make this disappear. 
+  #                                              # Choose your own method of hiding content appropriately.
   #
-  #   :show_today        => false             # Highlights today on the calendar using the CSS class 'today'. 
-  #                                           # Defaults to true.
-  #   :previous_month_text   => nil           # Displayed left of the month name if set
-  #   :next_month_text   => nil               # Displayed right of the month name if set
+  #   :show_today           => false             # Highlights today on the calendar using the CSS class 'today'. 
+  #                                              # Defaults to true.
+  #   :previous_month_text  => nil               # Displayed left of the month name if set
+  #   :next_month_text      => nil               # Displayed right of the month name if set
+  #   :show_year            => false             # Add year next to current month name if true
   #
   # For more customization, you can pass a code block to this method, that will get one argument, a Date object,
   # and return a values for the individual table cells. The block can return an array, [cell_text, cell_attrs],
@@ -81,7 +82,8 @@ module CalendarHelper
       :accessible => false,
       :show_today => true,
       :previous_month_text => nil,
-      :next_month_text => nil
+      :next_month_text => nil,
+      :show_year => false,
     }
     options = defaults.merge options
 
@@ -91,18 +93,18 @@ module CalendarHelper
     first_weekday = first_day_of_week(options[:first_day_of_week])
     last_weekday = last_day_of_week(options[:first_day_of_week])
     if defined?(I18n)
-      day_names = I18n.t("date.day_names", :default => nil)
+      day_names = I18n.t("date.day_names", :default => nil).dup
       day_names ||= Date::DAYNAMES.dup
-      abbr_day_names = options[:abbrev]==(0..-1) ? day_names : I18n.t("date.abbr_day_names", :default => nil)
+      abbr_day_names = options[:abbrev]==(0..-1) ? day_names : I18n.t("date.abbr_day_names", :default => nil).dup
       abbr_day_names ||= day_names.collect{|d| d[options[:abbrev]]}
-      month_names = I18n.t("date.month_names", :default => nil)
+      month_names = I18n.t("date.month_names", :default => nil).dup
       month_names ||= Date::MONTHNAMES.dup
     else
       day_names = Date::DAYNAMES.dup
       abbr_day_names = day_names.collect{|d| d[options[:abbrev]]}
       month_names = Date::MONTHNAMES.dup
     end
-    first_weekday.times do
+    first_weekday.times do # we would modify the originals if we didn't used .dup!
       day_names.push(day_names.shift)
       abbr_day_names.push(abbr_day_names.shift)
     end
@@ -116,7 +118,7 @@ module CalendarHelper
     else
       colspan=7
     end
-    cal << %(<th colspan="#{colspan}" class="#{options[:month_name_class]}">#{month_names[options[:month]]}</th>)
+    cal << %(<th colspan="#{colspan}" class="#{options[:month_name_class]}">#{month_names[options[:month]]}#{" " + options[:year].to_s if options[:show_year]}</th>)
     cal << %(<th colspan="2">#{options[:next_month_text]}</th>) if options[:next_month_text]
     cal << %(</tr><tr class="#{options[:day_name_class]}">)
     day_names.each_index do |i|
