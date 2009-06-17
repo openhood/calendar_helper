@@ -1,1 +1,6 @@
-test/output/
+.DS_Store
+*.log
+*.sqlite3
+test/output/*
+test/test/*
+sample.html
